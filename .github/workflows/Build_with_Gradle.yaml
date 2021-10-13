@@ -32,3 +32,25 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: Build with Gradle   
+      
+      - name: get-credentials
+        uses: google-github-actions/get-gke-credentials@main
+        with:
+          cluster_name: cluster-1
+          location: us-central1-c
+          credentials: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Build and publish image to GCR
+        uses: carbonchain/action-container-registry@v1.1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          dockerfile: ./Dockerfile
+          image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/hyerim1013:latest
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Deploy-Restart
+        run: kubectl rollout restart deployment/tomcat 
+
+      
+      - name: get-all
+        run: kubectl get all    
